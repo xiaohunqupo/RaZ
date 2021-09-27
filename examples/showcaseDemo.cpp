@@ -10,7 +10,7 @@ inline void loadSponzaScene(Raz::Entity& mesh, Raz::RenderSystem& render) {
   mesh.getComponent<Raz::Mesh>() = std::move(meshData);
   auto& meshRenderComp = mesh.getComponent<Raz::MeshRenderer>();
   meshRenderComp = std::move(meshRenderData);
-  meshRenderComp.load(render.getGeometryProgram());
+  meshRenderComp.loadMaterials();
 
   auto& meshTrans = mesh.getComponent<Raz::Transform>();
   meshTrans.setPosition(0.f, -1.f, 0.f);
@@ -26,7 +26,7 @@ inline void loadBallScene(Raz::Entity& mesh, Raz::RenderSystem& render) {
   mesh.getComponent<Raz::Mesh>() = std::move(meshData);
   auto& meshRenderComp = mesh.getComponent<Raz::MeshRenderer>();
   meshRenderComp = std::move(meshRenderData);
-  meshRenderComp.load(render.getGeometryProgram());
+  meshRenderComp.loadMaterials();
 
   auto& meshTrans = mesh.getComponent<Raz::Transform>();
   meshTrans.setPosition(0.f, 0.f, 0.f);
@@ -42,7 +42,7 @@ inline void loadShieldScene(Raz::Entity& mesh, Raz::RenderSystem& render) {
   mesh.getComponent<Raz::Mesh>() = std::move(meshData);
   auto& meshRenderComp = mesh.getComponent<Raz::MeshRenderer>();
   meshRenderComp = std::move(meshRenderData);
-  meshRenderComp.load(render.getGeometryProgram());
+  meshRenderComp.loadMaterials();
 
   auto& meshTrans = mesh.getComponent<Raz::Transform>();
   meshTrans.setPosition(0.f, 0.f, 0.f);
@@ -58,7 +58,7 @@ inline void loadCerberusScene(Raz::Entity& mesh, Raz::RenderSystem& render) {
   mesh.getComponent<Raz::Mesh>() = std::move(meshData);
   auto& meshRenderComp = mesh.getComponent<Raz::MeshRenderer>();
   meshRenderComp = std::move(meshRenderData);
-  meshRenderComp.load(render.getGeometryProgram());
+  meshRenderComp.loadMaterials();
 
   auto& meshTrans = mesh.getComponent<Raz::Transform>();
   meshTrans.setPosition(0.f, 0.f, 0.f);
@@ -75,7 +75,7 @@ inline void loadShaderBallScene(Raz::Entity& mesh, Raz::RenderSystem& render) {
   mesh.getComponent<Raz::Mesh>() = std::move(meshData);
   auto& meshRenderComp = mesh.getComponent<Raz::MeshRenderer>();
   meshRenderComp = std::move(meshRenderData);
-  meshRenderComp.load(render.getGeometryProgram());
+  meshRenderComp.loadMaterials();
 
   auto& meshTrans = mesh.getComponent<Raz::Transform>();
   meshTrans.setPosition(0.f, -2.f, 5.f);

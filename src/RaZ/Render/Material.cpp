@@ -3,6 +3,22 @@
 
 namespace Raz {
 
+namespace {
+
+constexpr std::string_view vertShaderSource = {
+#include "RaZ/../../shaders/common.vert.embed"
+};
+
+constexpr std::string_view blinnPhongSource = {
+#include "RaZ/../../shaders/blinn-phong.frag.embed"
+};
+
+constexpr std::string_view cookTorranceSource = {
+#include "RaZ/../../shaders/cook-torrance.frag.embed"
+};
+
+} // namespace
+
 void Material::loadBaseColorMap(const FilePath& filePath, int bindingIndex, bool flipVertically) {
   m_baseColorMap = Texture::create(filePath, bindingIndex, flipVertically);
 }
@@ -55,7 +71,7 @@ void MaterialBlinnPhong::loadBumpMap(const FilePath& filePath, int bindingIndex,
   m_bumpMap = Texture::create(filePath, bindingIndex, flipVertically);
 }
 
-void MaterialBlinnPhong::initTextures(const ShaderProgram& program) const {
+void MaterialBlinnPhong::initTextures() const {
   static const std::string locationBase = "uniMaterial.";
 
   static const std::string diffuseMapLocation      = locationBase + "diffuseMap";
@@ -64,6 +80,8 @@ void MaterialBlinnPhong::initTextures(const ShaderProgram& program) const {
   static const std::string emissiveMapLocation     = locationBase + "emissiveMap";
   static const std::string transparencyMapLocation = locationBase + "transparencyMap";
   static const std::string bumpMapLocation         = locationBase + "bumpMap";
+
+  ShaderProgram& program = getShaderProgram();
 
   program.use();
   program.sendUniform(diffuseMapLocation,      m_baseColorMap->getBindingIndex());
@@ -74,7 +92,7 @@ void MaterialBlinnPhong::initTextures(const ShaderProgram& program) const {
   program.sendUniform(bumpMapLocation,         m_bumpMap->getBindingIndex());
 }
 
-void MaterialBlinnPhong::bindAttributes(const ShaderProgram& program) const {
+void MaterialBlinnPhong::bindAttributes() const {
   static const std::string locationBase = "uniMaterial.";
 
   static const std::string diffuseLocation      = locationBase + "diffuse";
@@ -82,6 +100,8 @@ void MaterialBlinnPhong::bindAttributes(const ShaderProgram& program) const {
   static const std::string specularLocation     = locationBase + "specular";
   static const std::string emissiveLocation     = locationBase + "emissive";
   static const std::string transparencyLocation = locationBase + "transparency";
+
+  ShaderProgram& program = getShaderProgram();
 
   program.use();
   program.sendUniform(diffuseLocation,      m_baseColor);
@@ -109,6 +129,20 @@ void MaterialBlinnPhong::bindAttributes(const ShaderProgram& program) const {
   m_bumpMap->bind();
 }
 
+void MaterialBlinnPhong::sendMatrices(const Mat4f& modelMat, const Mat4f& viewProjMat) const {
+  ShaderProgram& program = getShaderProgram();
+
+  program.use();
+  program.sendUniform("uniModelMatrix", modelMat);
+  program.sendUniform("uniMvpMatrix", modelMat * viewProjMat);
+}
+
+ShaderProgram& MaterialBlinnPhong::getShaderProgram() {
+  static ShaderProgram program(VertexShader::loadFromSource(vertShaderSource),
+                               FragmentShader::loadFromSource(blinnPhongSource));
+  return program;
+}
+
 void MaterialCookTorrance::loadAlbedoMap(const FilePath& filePath, int bindingIndex, bool flipVertically) {
   loadBaseColorMap(filePath, bindingIndex, flipVertically);
 }
@@ -129,7 +163,7 @@ void MaterialCookTorrance::loadAmbientOcclusionMap(const FilePath& filePath, int
   m_ambientOcclusionMap = Texture::create(filePath, bindingIndex, flipVertically);
 }
 
-void MaterialCookTorrance::initTextures(const ShaderProgram& program) const {
+void MaterialCookTorrance::initTextures() const {
   static const std::string locationBase = "uniMaterial.";
 
   static const std::string albedoMapLocation           = locationBase + "albedoMap";
@@ -137,6 +171,8 @@ void MaterialCookTorrance::initTextures(const ShaderProgram& program) const {
   static const std::string metallicMapLocation         = locationBase + "metallicMap";
   static const std::string roughnessMapLocation        = locationBase + "roughnessMap";
   static const std::string ambientOcclusionMapLocation = locationBase + "ambientOcclusionMap";
+
+  ShaderProgram& program = getShaderProgram();
 
   program.use();
   program.sendUniform(albedoMapLocation,           m_baseColorMap->getBindingIndex());
@@ -146,12 +182,14 @@ void MaterialCookTorrance::initTextures(const ShaderProgram& program) const {
   program.sendUniform(ambientOcclusionMapLocation, m_ambientOcclusionMap->getBindingIndex());
 }
 
-void MaterialCookTorrance::bindAttributes(const ShaderProgram& program) const {
+void MaterialCookTorrance::bindAttributes() const {
   static const std::string locationBase = "uniMaterial.";
 
   static const std::string baseColorLocation       = locationBase + "baseColor";
   static const std::string metallicFactorLocation  = locationBase + "metallicFactor";
   static const std::string roughnessFactorLocation = locationBase + "roughnessFactor";
+
+  ShaderProgram& program = getShaderProgram();
 
   program.use();
   program.sendUniform(baseColorLocation,       m_baseColor);
@@ -172,6 +210,20 @@ void MaterialCookTorrance::bindAttributes(const ShaderProgram& program) const {
 
   m_ambientOcclusionMap->activate();
   m_ambientOcclusionMap->bind();
+}
+
+void MaterialCookTorrance::sendMatrices(const Mat4f& modelMat, const Mat4f& viewProjMat) const {
+  ShaderProgram& program = getShaderProgram();
+
+  program.use();
+  program.sendUniform("uniModelMatrix", modelMat);
+  program.sendUniform("uniMvpMatrix", modelMat * viewProjMat);
+}
+
+ShaderProgram& MaterialCookTorrance::getShaderProgram() {
+  static ShaderProgram program(VertexShader::loadFromSource(vertShaderSource),
+                               FragmentShader::loadFromSource(cookTorranceSource));
+  return program;
 }
 
 } // namespace Raz

@@ -72,12 +72,9 @@ void RenderGraph::execute(RenderSystem& renderSystem) const {
       if (entity->hasComponent<MeshRenderer>() && entity->hasComponent<Transform>()) {
         const Mat4f modelMat = entity->getComponent<Transform>().computeTransformMatrix();
 
-        const ShaderProgram& geometryProgram = m_geometryPass.getProgram();
-
-        geometryProgram.sendUniform("uniModelMatrix", modelMat);
-        geometryProgram.sendUniform("uniMvpMatrix", modelMat * viewProjMat);
-
-        entity->getComponent<MeshRenderer>().draw(geometryProgram);
+        const auto& meshRenderer = entity->getComponent<MeshRenderer>();
+        meshRenderer.prepare(modelMat, viewProjMat);
+        meshRenderer.draw();
       }
     }
   }

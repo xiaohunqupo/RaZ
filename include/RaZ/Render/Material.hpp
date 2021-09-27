@@ -51,8 +51,9 @@ public:
 
   static MaterialCookTorrancePtr recoverMaterial(MaterialPreset preset, float roughnessFactor);
   virtual MaterialPtr clone() const = 0;
-  virtual void initTextures(const ShaderProgram& program) const = 0;
-  virtual void bindAttributes(const ShaderProgram& program) const = 0;
+  virtual void initTextures() const = 0;
+  virtual void bindAttributes() const = 0;
+  virtual void sendMatrices(const Mat4f& modelMat, const Mat4f& viewProjMat) const = 0;
 
   Material& operator=(Material&&) noexcept = default;
 
@@ -117,10 +118,13 @@ public:
   void loadBumpMap(const FilePath& filePath, int bindingIndex, bool flipVertically = true);
 
   MaterialPtr clone() const override { return MaterialBlinnPhong::create(*this); }
-  void initTextures(const ShaderProgram& program) const override;
-  void bindAttributes(const ShaderProgram& program) const override;
+  void initTextures() const override;
+  void bindAttributes() const override;
+  void sendMatrices(const Mat4f& modelMat, const Mat4f& viewProjMat) const override;
 
 private:
+  static ShaderProgram& getShaderProgram();
+
   Vec3f m_ambient      = Vec3f(1.f);
   Vec3f m_specular     = Vec3f(1.f);
   Vec3f m_emissive     = Vec3f(0.f);
@@ -171,10 +175,13 @@ public:
   void loadAmbientOcclusionMap(const FilePath& filePath, int bindingIndex, bool flipVertically = true);
 
   MaterialPtr clone() const override { return MaterialCookTorrance::create(*this); }
-  void initTextures(const ShaderProgram& program) const override;
-  void bindAttributes(const ShaderProgram& program) const override;
+  void initTextures() const override;
+  void bindAttributes() const override;
+  void sendMatrices(const Mat4f& modelMat, const Mat4f& viewProjMat) const override;
 
 private:
+  static ShaderProgram& getShaderProgram();
+
   float m_metallicFactor  = 1.f;
   float m_roughnessFactor = 1.f;
 

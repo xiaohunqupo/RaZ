@@ -40,10 +40,9 @@ public:
   /// \return Cloned mesh renderer.
   MeshRenderer clone() const;
   void load(const Mesh& mesh, RenderMode renderMode = RenderMode::TRIANGLE);
-  void load(const ShaderProgram& program) const;
-  void load(const Mesh& mesh, const ShaderProgram& program, RenderMode renderMode = RenderMode::TRIANGLE);
+  void loadMaterials() const;
+  void prepare(const Mat4f& modelMat, const Mat4f& viewProjMat) const;
   void draw() const;
-  void draw(const ShaderProgram& program) const;
 
   MeshRenderer& operator=(const MeshRenderer&) = delete;
   MeshRenderer& operator=(MeshRenderer&&) noexcept = default;

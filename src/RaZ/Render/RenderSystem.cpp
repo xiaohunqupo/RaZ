@@ -115,7 +115,7 @@ void RenderSystem::updateShaders() const {
 
   for (const Entity* entity : m_entities) {
     if (entity->hasComponent<MeshRenderer>())
-      entity->getComponent<MeshRenderer>().load(getGeometryProgram());
+      entity->getComponent<MeshRenderer>().loadMaterials();
   }
 }
 
@@ -161,7 +161,7 @@ void RenderSystem::linkEntity(const EntityPtr& entity) {
     updateLights();
 
   if (entity->hasComponent<MeshRenderer>())
-    entity->getComponent<MeshRenderer>().load(getGeometryProgram());
+    entity->getComponent<MeshRenderer>().loadMaterials();
 }
 
 void RenderSystem::initialize() {

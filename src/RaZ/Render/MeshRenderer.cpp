@@ -88,22 +88,17 @@ void MeshRenderer::load(const Mesh& mesh, RenderMode renderMode) {
     setMaterial(MaterialCookTorrance::create());
 }
 
-void MeshRenderer::load(const ShaderProgram& program) const {
+void MeshRenderer::loadMaterials() const {
   for (const MaterialPtr& material : m_materials)
-    material->initTextures(program);
+    material->initTextures();
 }
 
-void MeshRenderer::load(const Mesh& mesh, const ShaderProgram& program, RenderMode renderMode) {
-  load(mesh, renderMode);
-  load(program);
+void MeshRenderer::prepare(const Mat4f& modelMat, const Mat4f& viewProjMat) const {
+  for (const MaterialPtr& material : m_materials)
+    material->sendMatrices(modelMat, viewProjMat);
 }
 
 void MeshRenderer::draw() const {
-  for (const SubmeshRenderer& submeshRenderer : m_submeshRenderers)
-    submeshRenderer.draw();
-}
-
-void MeshRenderer::draw(const ShaderProgram& program) const {
   for (const SubmeshRenderer& submeshRenderer : m_submeshRenderers) {
     if (submeshRenderer.getMaterialIndex() != std::numeric_limits<std::size_t>::max()) {
       assert("Error: Material index does not reference any existing material." && submeshRenderer.getMaterialIndex() < m_materials.size());
@@ -111,7 +106,7 @@ void MeshRenderer::draw(const ShaderProgram& program) const {
       const MaterialPtr& material = m_materials[submeshRenderer.getMaterialIndex()];
 
       if (material)
-        material->bindAttributes(program);
+        material->bindAttributes();
     }
 
     submeshRenderer.draw();

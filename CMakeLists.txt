@@ -316,6 +316,25 @@ if (NOT RAZ_USE_FBX OR NOT FBX_FOUND)
     )
 endif ()
 
+#########################
+# RaZ - Prepare shaders #
+#########################
+
+file(
+    GLOB_RECURSE
+    RAZ_SHADERS
+
+    ${PROJECT_SOURCE_DIR}/shaders/*.vert # Vertex shader
+    ${PROJECT_SOURCE_DIR}/shaders/*.geom # Geometry shader
+    ${PROJECT_SOURCE_DIR}/shaders/*.frag # Fragment shader
+)
+
+# Creating a copy of each shader to enclose its content with a raw string literal R"(...)"
+foreach (SHADER_PATH ${RAZ_SHADERS})
+    file(READ "${SHADER_PATH}" SHADER_CONTENT)
+    file(WRITE "${SHADER_PATH}.embed" "R\"(${SHADER_CONTENT})\"")
+endforeach ()
+
 ###############
 # RaZ - Build #
 ###############
