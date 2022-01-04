@@ -75,9 +75,14 @@ void RenderGraph::execute(RenderSystem& renderSystem) const {
         const ShaderProgram& geometryProgram = m_geometryPass.getProgram();
 
         geometryProgram.sendUniform("uniModelMatrix", modelMat);
-        geometryProgram.sendUniform("uniMvpMatrix", modelMat * viewProjMat);
+        geometryProgram.sendUniform("uniVPMatrix", viewProjMat);
 
-        entity->getComponent<MeshRenderer>().draw(geometryProgram);
+        const auto& meshRenderer = entity->getComponent<MeshRenderer>();
+
+        //if (meshRenderer.getInstanceCount() > 1)
+          meshRenderer.updateInstancesMatrices();
+
+        meshRenderer.draw(geometryProgram);
       }
     }
   }

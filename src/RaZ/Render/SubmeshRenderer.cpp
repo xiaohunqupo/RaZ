@@ -1,4 +1,5 @@
 #include "GL/glew.h"
+#include "RaZ/Render/MeshRenderer.hpp"
 #include "RaZ/Render/Renderer.hpp"
 #include "RaZ/Render/SubmeshRenderer.hpp"
 #include "RaZ/Utils/Logger.hpp"
@@ -10,24 +11,23 @@ void SubmeshRenderer::setRenderMode(RenderMode renderMode, const Submesh& submes
 
   switch (m_renderMode) {
     case RenderMode::POINT:
-      m_renderFunc = [] (const VertexBuffer& vertexBuffer, const IndexBuffer&) {
-        glDrawArrays(GL_POINTS, 0, static_cast<int>(vertexBuffer.vertexCount));
+      m_renderFunc = [] (const VertexBuffer& vertexBuffer, const IndexBuffer&, unsigned int instanceCount) {
+        glDrawArraysInstanced(GL_POINTS, 0, static_cast<int>(vertexBuffer.vertexCount), static_cast<int>(instanceCount));
       };
 
       break;
 
-//    case RenderMode::LINE: {
-//      m_renderFunc = [] (const VertexBuffer&, const IndexBuffer& indexBuffer) {
-//        glDrawElements(GL_LINES, static_cast<int>(indexBuffer.lineIndexCount), GL_UNSIGNED_INT, nullptr);
+//    case RenderMode::LINE:
+//      m_renderFunc = [] (const VertexBuffer&, const IndexBuffer& indexBuffer, unsigned int instanceCount) {
+//        glDrawElementsInstanced(GL_LINES, static_cast<int>(indexBuffer.lineIndexCount), GL_UNSIGNED_INT, nullptr, static_cast<int>(instanceCount));
 //      };
 //
 //      break;
-//    }
 
     case RenderMode::TRIANGLE:
     default:
-      m_renderFunc = [] (const VertexBuffer&, const IndexBuffer& indexBuffer) {
-        glDrawElements(GL_TRIANGLES, static_cast<int>(indexBuffer.triangleIndexCount), GL_UNSIGNED_INT, nullptr);
+      m_renderFunc = [] (const VertexBuffer&, const IndexBuffer& indexBuffer, unsigned int instanceCount) {
+        glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(indexBuffer.triangleIndexCount), GL_UNSIGNED_INT, nullptr, static_cast<int>(instanceCount));
       };
 
       break;
@@ -51,17 +51,18 @@ void SubmeshRenderer::load(const Submesh& submesh, RenderMode renderMode) {
   setRenderMode(renderMode, submesh);
 }
 
-void SubmeshRenderer::draw() const {
+void SubmeshRenderer::draw(unsigned int instanceCount) const {
   m_vao.bind();
   m_ibo.bind();
 
-  m_renderFunc(m_vbo, m_ibo);
+  m_renderFunc(m_vbo, m_ibo, instanceCount);
 }
 
 void SubmeshRenderer::loadVertices(const Submesh& submesh) {
   Logger::debug("[SubmeshRenderer] Loading submesh vertices...");
 
   m_vao.bind();
+
   m_vbo.bind();
 
   const std::vector<Vertex>& vertices = submesh.getVertices();
@@ -102,7 +103,26 @@ void SubmeshRenderer::loadVertices(const Submesh& submesh) {
                         reinterpret_cast<void*>(positionSize + texcoordsSize + normalSize));
   glEnableVertexAttribArray(3);
 
-  m_vbo.unbind();
+  // Instance matrix (4 rows of vec4)
+
+  const VertexBuffer& instanceBuffer = MeshRenderer::getInstanceBuffer();
+
+  instanceBuffer.bind();
+
+  for (uint8_t i = 0; i < 4; ++i) {
+    const unsigned int newIndex = 4 + i;
+
+    glVertexAttribPointer(newIndex,
+                          4, GL_FLOAT, // vec4
+                          GL_FALSE,
+                          sizeof(Mat4f),
+                          reinterpret_cast<void*>(sizeof(Vec4f) * i));
+    glVertexAttribDivisor(newIndex, 1);
+    glEnableVertexAttribArray(newIndex);
+  }
+
+  instanceBuffer.unbind();
+
   m_vao.unbind();
 
   Logger::debug("[SubmeshRenderer] Loaded submesh vertices (" + std::to_string(vertices.size()) + " vertices loaded)");

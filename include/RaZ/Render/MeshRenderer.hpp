@@ -14,9 +14,11 @@ namespace Raz {
 class Mesh;
 
 class MeshRenderer final : public Component {
+  friend SubmeshRenderer;
+
 public:
-  MeshRenderer() = default;
-  explicit MeshRenderer(const Mesh& mesh, RenderMode renderMode = RenderMode::TRIANGLE) { load(mesh, renderMode); }
+  MeshRenderer() { setInstanceCount(1); }
+  explicit MeshRenderer(const Mesh& mesh, RenderMode renderMode = RenderMode::TRIANGLE) : MeshRenderer() { load(mesh, renderMode); }
   MeshRenderer(const MeshRenderer&) = delete;
   MeshRenderer(MeshRenderer&&) noexcept = default;
 
@@ -24,6 +26,13 @@ public:
   std::vector<SubmeshRenderer>& getSubmeshRenderers() { return m_submeshRenderers; }
   const std::vector<MaterialPtr>& getMaterials() const { return m_materials; }
   std::vector<MaterialPtr>& getMaterials() { return m_materials; }
+  std::size_t getInstanceCount() const noexcept { return m_instanceMatrices.size(); }
+  /// Gets the model matrices of all instances.
+  /// \return Instances' model matrices.
+  const std::vector<Mat4f>& getInstancesMatrices() const { return m_instanceMatrices; }
+  /// Gets the model matrices of all instances.
+  /// \return Instances' model matrices.
+  std::vector<Mat4f>& getInstancesMatrices() { return m_instanceMatrices; }
 
   static void drawUnitPlane();
   static void drawUnitSphere();
@@ -34,6 +43,11 @@ public:
   /// \param renderMode Render mode to apply.
   /// \param mesh Mesh to load the render mode's indices from.
   void setRenderMode(RenderMode renderMode, const Mesh& mesh);
+  /// Sets the instance count, which will draw as many times the same mesh.
+  /// \note The instances matrices must be modified for the meshes to have different transformations.
+  /// \see getInstancesMatrices()
+  /// \param instanceCount Amount of instances to set.
+  void setInstanceCount(unsigned int instanceCount);
   /// Sets one unique material for the whole mesh.
   /// \warning This clears all previously existing materials.
   /// \param material Material to be set.
@@ -71,6 +85,8 @@ public:
   /// \param program Shader program to bind the textures to.
   /// \param renderMode Render mode to apply.
   void load(const Mesh& mesh, const ShaderProgram& program, RenderMode renderMode = RenderMode::TRIANGLE);
+  /// Uploads all instance matrices on the GPU.
+  void updateInstancesMatrices() const;
   /// Renders the mesh.
   /// \warning This requires to manually handle materials' uniforms updating and textures activation & binding; if not, use the overload with a ShaderProgram.
   void draw() const;
@@ -82,8 +98,13 @@ public:
   MeshRenderer& operator=(MeshRenderer&&) noexcept = default;
 
 private:
+  static const VertexBuffer& getInstanceBuffer();
+
   std::vector<SubmeshRenderer> m_submeshRenderers {};
   std::vector<MaterialPtr> m_materials {};
+
+  std::vector<Mat4f> m_instanceMatrices {};
+  static inline unsigned int s_maxBufferSize = sizeof(m_instanceMatrices.front());
 };
 
 } // namespace Raz

@@ -41,7 +41,8 @@ public:
   /// \param renderMode Primitive type to render the submesh with.
   void load(const Submesh& submesh, RenderMode renderMode = RenderMode::TRIANGLE);
   /// Draws the submesh in the scene.
-  void draw() const;
+  /// \param instanceCount Number of times to render the submesh.
+  void draw(unsigned int instanceCount = 1) const;
 
 private:
   void loadVertices(const Submesh& submesh);
@@ -52,7 +53,7 @@ private:
   IndexBuffer m_ibo {};
 
   RenderMode m_renderMode = RenderMode::TRIANGLE;
-  std::function<void(const VertexBuffer&, const IndexBuffer&)> m_renderFunc {};
+  std::function<void(const VertexBuffer&, const IndexBuffer&, unsigned int)> m_renderFunc {};
 
   std::size_t m_materialIndex = 0;
 };
