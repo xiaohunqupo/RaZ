@@ -43,6 +43,11 @@ public:
   /// \param byteCount Exact number of bytes to read.
   /// \param flush Clear the data that has already been received before reading.
   std::string receiveExactly(std::size_t byteCount, bool flush = false);
+  /// Receives the data that has been sent to the client until some delimiter has been found.
+  /// \note This operation is blocking and returns only when the delimiter has been received or if an error occurred.
+  /// \param delimiter Delimiter until which to receive.
+  /// \param flush Clear the data that has already been received before reading.
+  std::string receiveUntil(std::string_view delimiter, bool flush = false);
   /// Disconnects the client from the server.
   void disconnect();
 

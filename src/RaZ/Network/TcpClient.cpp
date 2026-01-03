@@ -4,6 +4,7 @@
 #include "asio/connect.hpp"
 #include "asio/ip/tcp.hpp"
 #include "asio/read.hpp"
+#include "asio/read_until.hpp"
 #include "asio/streambuf.hpp"
 #include "asio/write.hpp"
 
@@ -85,6 +86,12 @@ std::string TcpClient::receiveExactly(std::size_t byteCount, bool flush) {
       asio::read(socket, buffer, asio::transfer_at_least(byteCount - buffer.size()), error);
 
     return byteCount;
+  }, flush);
+}
+
+std::string TcpClient::receiveUntil(std::string_view delimiter, bool flush) {
+  return m_impl->read([delimiter] (asio::ip::tcp::socket& socket, asio::streambuf& buffer, asio::error_code& error) {
+    return asio::read_until(socket, buffer, delimiter, error);
   }, flush);
 }
 

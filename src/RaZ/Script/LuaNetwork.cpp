@@ -29,6 +29,8 @@ void LuaWrapper::registerNetworkTypes() {
                                                            PickOverload<std::size_t, bool>(&TcpClient::receiveAtLeast));
     tcpClient["receiveExactly"]            = sol::overload([] (TcpClient& c, std::size_t b) { return c.receiveExactly(b); },
                                                            PickOverload<std::size_t, bool>(&TcpClient::receiveExactly));
+    tcpClient["receiveUntil"]              = sol::overload([] (TcpClient& c, std::string_view d) { return c.receiveUntil(d); },
+                                                           PickOverload<std::string_view, bool>(&TcpClient::receiveUntil));
     tcpClient["disconnect"]                = &TcpClient::disconnect;
   }
 
