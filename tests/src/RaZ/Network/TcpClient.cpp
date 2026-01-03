@@ -15,14 +15,32 @@ TEST_CASE("TcpClient basic", "[network]") {
   CHECK_THROWS(client.recoverAvailableByteCount());
   CHECK_THROWS(client.send("test"));
   CHECK_THROWS(client.receive());
+  CHECK_THROWS(client.receiveAtLeast(1));
 }
 
-TEST_CASE("TcpClient send", "[network]") {
+TEST_CASE("TcpClient connection", "[network]") {
+  Raz::TcpServer server;
+  Raz::TcpClient client;
+
+  CHECK_THROWS(client.connect("localhost", 1234)); // No server to connect to
+
+  std::thread serverThread([&server] () { server.start(1234); });
+
+  CHECK_NOTHROW(client.connect("localhost", 1234));
+  CHECK(client.isConnected());
+
+  CHECK_NOTHROW(client.disconnect());
+  CHECK_FALSE(client.isConnected());
+
+  CHECK_NOTHROW(server.stop());
+  CHECK_NOTHROW(serverThread.join());
+}
+
+TEST_CASE("TcpClient send and receive", "[network]") {
   Raz::TcpServer server;
   std::thread serverThread([&server] () { server.start(1234); });
 
-  Raz::TcpClient client;
-  client.connect("localhost", 1234);
+  Raz::TcpClient client("localhost", 1234);
   REQUIRE(client.isConnected());
 
   client.send("test");
@@ -30,12 +48,25 @@ TEST_CASE("TcpClient send", "[network]") {
 
   client.send("other test");
   std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Waiting for the server to send back data
-  CHECK(client.recoverAvailableByteCount() == 10); // This can return a different number if the server didn't have time to reply anything, hence the wait
+  CHECK(client.recoverAvailableByteCount() == 10); // This can return a different number if the server didn't have time to send anything back, hence the wait
   CHECK(client.receive() == "other test");
 
   client.disconnect();
-  CHECK_FALSE(client.isConnected());
+  server.stop();
+  serverThread.join();
+}
 
+TEST_CASE("TcpClient receive at least", "[network]") {
+  Raz::TcpServer server;
+  std::thread serverThread([&server] () { server.start(1234); });
+
+  Raz::TcpClient client("localhost", 1234);
+  REQUIRE(client.isConnected());
+
+  client.send("data");
+  CHECK(client.receiveAtLeast(4) == "data");
+
+  client.disconnect();
   server.stop();
   serverThread.join();
 }

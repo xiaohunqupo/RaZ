@@ -41,7 +41,7 @@ std::size_t UdpClient::recoverAvailableByteCount() {
 std::string UdpClient::receive() {
   std::array<char, 1024> buffer {};
   asio::ip::udp::endpoint senderEndpoint;
-  const size_t length = m_impl->socket.receive_from(asio::buffer(buffer), senderEndpoint);
+  const std::size_t length = m_impl->socket.receive_from(asio::buffer(buffer), senderEndpoint);
   Logger::debug("[UdpClient] Received data from {}: {}", senderEndpoint.address().to_string(), std::string_view(buffer.data(), length));
   return std::string(buffer.data(), length);
 }

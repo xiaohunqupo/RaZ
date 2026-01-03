@@ -3,6 +3,8 @@
 
 #include "asio/connect.hpp"
 #include "asio/ip/tcp.hpp"
+#include "asio/read.hpp"
+#include "asio/streambuf.hpp"
 #include "asio/write.hpp"
 
 namespace Raz {
@@ -10,9 +12,26 @@ namespace Raz {
 struct TcpClient::Impl {
   Impl() : socket(context), resolver(context) {}
 
+  std::string read(const auto& readFunc, bool flush) {
+    if (flush)
+      buffer.consume(buffer.size());
+
+    asio::error_code error;
+    const std::size_t byteCount = readFunc(socket, buffer, error);
+
+    if (error)
+      throw std::runtime_error(std::format("[TcpClient] Failed to receive data: {}", error.message()));
+
+    std::string result(static_cast<const char*>(buffer.data().data()), byteCount);
+    buffer.consume(byteCount);
+
+    return result;
+  }
+
   asio::io_context context;
   asio::ip::tcp::socket socket;
   asio::ip::tcp::resolver resolver;
+  asio::streambuf buffer;
 };
 
 TcpClient::TcpClient() : m_impl{ std::make_unique<Impl>() } {}
@@ -49,10 +68,14 @@ std::size_t TcpClient::recoverAvailableByteCount() {
   return command.get();
 }
 
-std::string TcpClient::receive() {
-  std::array<char, 1024> buffer {};
-  const size_t length = m_impl->socket.read_some(asio::buffer(buffer));
-  return std::string(buffer.data(), length);
+std::string TcpClient::receiveAtLeast(std::size_t minByteCount, bool flush) {
+  return m_impl->read([minByteCount] (asio::ip::tcp::socket& socket, asio::streambuf& buffer, asio::error_code& error) {
+    // The buffer can already hold data received previously that will be returned; if necessary, reading only what is missing
+    if (buffer.size() < minByteCount)
+      asio::read(socket, buffer, asio::transfer_at_least(minByteCount - buffer.size()), error);
+
+    return buffer.size();
+  }, flush);
 }
 
 void TcpClient::disconnect() {

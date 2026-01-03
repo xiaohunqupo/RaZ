@@ -31,7 +31,13 @@ public:
   std::size_t recoverAvailableByteCount();
   /// Receives the data that has been sent to the client.
   /// \note This operation is blocking and returns only when at least one byte has been received or if an error occurred.
-  std::string receive();
+  /// \param flush Clear the data that has already been received before reading.
+  std::string receive(bool flush = false) { return receiveAtLeast(1, flush); }
+  /// Receives at least the given number of bytes of data that has been sent to the client.
+  /// \note This operation is blocking and returns only when at least the given byte count has been received or if an error occurred.
+  /// \param minByteCount Minimum number of bytes to read.
+  /// \param flush Clear the data that has already been received before reading.
+  std::string receiveAtLeast(std::size_t minByteCount, bool flush = false);
   /// Disconnects the client from the server.
   void disconnect();
 

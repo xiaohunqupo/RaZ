@@ -3,11 +3,14 @@
 #include "RaZ/Network/UdpClient.hpp"
 #include "RaZ/Network/UdpServer.hpp"
 #include "RaZ/Script/LuaWrapper.hpp"
+#include "RaZ/Utils/TypeUtils.hpp"
 
 #define SOL_ALL_SAFETIES_ON 1
 #include "sol/sol.hpp"
 
 namespace Raz {
+
+using namespace TypeUtils;
 
 void LuaWrapper::registerNetworkTypes() {
   sol::state& state = getState();
@@ -20,7 +23,10 @@ void LuaWrapper::registerNetworkTypes() {
     tcpClient["connect"]                   = &TcpClient::connect;
     tcpClient["send"]                      = &TcpClient::send;
     tcpClient["recoverAvailableByteCount"] = &TcpClient::recoverAvailableByteCount;
-    tcpClient["receive"]                   = &TcpClient::receive;
+    tcpClient["receive"]                   = sol::overload([] (TcpClient& c) { return c.receive(); },
+                                                           PickOverload<bool>(&TcpClient::receive));
+    tcpClient["receiveAtLeast"]            = sol::overload([] (TcpClient& c, std::size_t b) { return c.receiveAtLeast(b); },
+                                                           PickOverload<std::size_t, bool>(&TcpClient::receiveAtLeast));
     tcpClient["disconnect"]                = &TcpClient::disconnect;
   }
 
