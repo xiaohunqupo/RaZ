@@ -38,6 +38,11 @@ public:
   /// \param minByteCount Minimum number of bytes to read.
   /// \param flush Clear the data that has already been received before reading.
   std::string receiveAtLeast(std::size_t minByteCount, bool flush = false);
+  /// Receives exactly the given number of bytes of data that has been sent to the client.
+  /// \note This operation is blocking and returns only when the exact given byte count has been received or if an error occurred.
+  /// \param byteCount Exact number of bytes to read.
+  /// \param flush Clear the data that has already been received before reading.
+  std::string receiveExactly(std::size_t byteCount, bool flush = false);
   /// Disconnects the client from the server.
   void disconnect();
 

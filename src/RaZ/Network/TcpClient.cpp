@@ -78,6 +78,16 @@ std::string TcpClient::receiveAtLeast(std::size_t minByteCount, bool flush) {
   }, flush);
 }
 
+std::string TcpClient::receiveExactly(std::size_t byteCount, bool flush) {
+  return m_impl->read([byteCount] (asio::ip::tcp::socket& socket, asio::streambuf& buffer, asio::error_code& error) {
+    // The buffer can already hold data received previously that will be returned; if necessary, reading only what is missing
+    if (buffer.size() < byteCount)
+      asio::read(socket, buffer, asio::transfer_at_least(byteCount - buffer.size()), error);
+
+    return byteCount;
+  }, flush);
+}
+
 void TcpClient::disconnect() {
   if (!isConnected())
     return;
