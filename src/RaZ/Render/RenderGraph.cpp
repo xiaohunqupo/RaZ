@@ -34,7 +34,7 @@ void RenderGraph::updateShaders() const {
     renderPass->getProgram().updateShaders();
 }
 
-void RenderGraph::execute(RenderSystem& renderSystem) {
+void RenderGraph::execute(const RenderSystem& renderSystem) {
   ZoneScopedN("RenderGraph::execute");
 
   {
@@ -54,7 +54,7 @@ void RenderGraph::execute(RenderSystem& renderSystem) {
   m_executedPasses.clear();
 }
 
-void RenderGraph::executeGeometryPass(RenderSystem& renderSystem) const {
+void RenderGraph::executeGeometryPass(const RenderSystem& renderSystem) const {
   ZoneScopedN("RenderGraph::executeGeometryPass");
   TracyGpuZone("Geometry pass")
 
@@ -103,7 +103,7 @@ void RenderGraph::executeGeometryPass(RenderSystem& renderSystem) const {
 }
 
 void RenderGraph::executePass(const RenderPass& renderPass) {
-  if (m_executedPasses.find(&renderPass) != m_executedPasses.cend())
+  if (m_executedPasses.contains(&renderPass))
     return;
 
   for (const RenderPass* parentPass : renderPass.m_parents)

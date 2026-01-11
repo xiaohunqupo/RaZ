@@ -41,10 +41,10 @@ public:
 private:
   /// Executes the render graph, executing all passes starting with the geometry's.
   /// \param renderSystem Render system executing the render graph.
-  void execute(RenderSystem& renderSystem);
+  void execute(const RenderSystem& renderSystem);
   /// Executes the geometry pass.
   /// \param renderSystem Render system executing the render graph.
-  void executeGeometryPass(RenderSystem& renderSystem) const;
+  void executeGeometryPass(const RenderSystem& renderSystem) const;
   /// Executes a render pass, which in turn recursively executes its parents if they have not already been in the current frame.
   /// \param renderPass Render pass to be executed.
   void executePass(const RenderPass& renderPass);

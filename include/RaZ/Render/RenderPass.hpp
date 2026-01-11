@@ -53,7 +53,7 @@ public:
   void enable(bool enabled = true) { m_enabled = enabled; }
   /// Disables the render pass.
   void disable() { enable(false); }
-  /// Checks that the current render pass is valid, that is, if none of its buffer has been defined as both read & write.
+  /// Checks that the current render pass is valid, that is, if none of its buffers has been defined as both read & write.
   /// \return True if the render pass is valid, false otherwise.
   /// \see RenderGraph::isValid()
   bool isValid() const;

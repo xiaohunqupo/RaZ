@@ -1,4 +1,3 @@
-#include "RaZ/Data/Mesh.hpp"
 #include "RaZ/Render/Framebuffer.hpp"
 #include "RaZ/Render/GraphicObjects.hpp"
 #include "RaZ/Render/Renderer.hpp"
@@ -14,11 +13,15 @@
 
 namespace Raz {
 
-namespace {
+Framebuffer::Framebuffer() {
+  ZoneScopedN("Framebuffer::Framebuffer");
 
-inline void drawDisplaySurface() {
-  ZoneScopedN("[Framebuffer]::drawDisplaySurface");
+  Logger::debug("[Framebuffer] Creating...");
+  Renderer::generateFramebuffer(m_index);
+  Logger::debug("[Framebuffer] Created (ID: {})", m_index.get());
+}
 
+VertexShader Framebuffer::recoverVertexShader() {
   // Creating a triangle large enough to cover the whole render frame:
   //
   //   3 | \                                3 | \
@@ -32,53 +35,24 @@ inline void drawDisplaySurface() {
   //  -1 -------------------------         -1 -------------
   //    -1     0     1     2     3           -1  0  1  2  3
 
-  static const std::pair<VertexArray, VertexBuffer> vertexObjects = [] () {
-    VertexArray vao;
-    VertexBuffer vbo;
-
-    vao.bind();
-    vbo.bind();
-
-    static constexpr std::array<Vec2f, 6> vertices = { Vec2f(-1.f, -1.f), Vec2f(0.f, 0.f),
-                                                       Vec2f( 3.f, -1.f), Vec2f(2.f, 0.f),
-                                                       Vec2f(-1.f,  3.f), Vec2f(0.f, 2.f) };
-    Renderer::sendBufferData(BufferType::ARRAY_BUFFER, static_cast<std::ptrdiff_t>(sizeof(Vec2f) * 12), vertices.data(), BufferDataUsage::STATIC_DRAW);
-
-    Renderer::setVertexAttrib(0, AttribDataType::FLOAT, 2, sizeof(Vec2f) * 2, 0); // Position
-    Renderer::setVertexAttrib(1, AttribDataType::FLOAT, 2, sizeof(Vec2f) * 2, sizeof(Vec2f)); // Texcoords
-    Renderer::enableVertexAttribArray(0);
-    Renderer::enableVertexAttribArray(1);
-
-    vbo.unbind();
-    vao.unbind();
-
-    return std::make_pair(std::move(vao), std::move(vbo));
-  }();
-
-  vertexObjects.first.bind();
-  Renderer::drawArrays(PrimitiveType::TRIANGLES, 3);
-}
-
-} // namespace
-
-Framebuffer::Framebuffer() {
-  ZoneScopedN("Framebuffer::Framebuffer");
-
-  Logger::debug("[Framebuffer] Creating...");
-  Renderer::generateFramebuffer(m_index);
-  Logger::debug("[Framebuffer] Created (ID: {})", m_index.get());
-}
-
-VertexShader Framebuffer::recoverVertexShader() {
   static constexpr std::string_view vertSource = R"(
-    layout(location = 0) in vec2 vertPosition;
-    layout(location = 1) in vec2 vertTexcoords;
+    const vec2 positions[3] = vec2[](
+      vec2(-1.0, -1.0),
+      vec2( 3.0, -1.0),
+      vec2(-1.0,  3.0)
+    );
+
+    const vec2 texcoords[3] = vec2[](
+      vec2(0.0, 0.0),
+      vec2(2.0, 0.0),
+      vec2(0.0, 2.0)
+    );
 
     out vec2 fragTexcoords;
 
     void main() {
-      fragTexcoords = vertTexcoords;
-      gl_Position   = vec4(vertPosition, 0.0, 1.0);
+      fragTexcoords = texcoords[gl_VertexID];
+      gl_Position   = vec4(positions[gl_VertexID], 0.0, 1.0);
     }
   )";
 
@@ -184,8 +158,11 @@ void Framebuffer::display() const {
   ZoneScopedN("Framebuffer::display");
   TracyGpuZone("Framebuffer::display")
 
+  static const VertexArray vao;
+  vao.bind();
+
   Renderer::clear(MaskType::COLOR);
-  drawDisplaySurface();
+  Renderer::drawArrays(PrimitiveType::TRIANGLES, 3);
 }
 
 Framebuffer::~Framebuffer() {

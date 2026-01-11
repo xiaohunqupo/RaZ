@@ -125,7 +125,7 @@ int main() {
         vec3 finalColor = mix(origColor, blendedColor, uniBlendFactor);
         fragColor       = vec4(finalColor, 1.0);
       }
-    )"));
+    )"), "Edge blend");
     edgeBlend.getProgram().setAttribute(0.f, "uniBlendFactor");
     edgeBlend.getProgram().sendAttributes();
     edgeBlend.addReadTexture(colorBuffer, "uniColorBuffer");
