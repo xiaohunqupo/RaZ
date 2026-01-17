@@ -105,6 +105,8 @@ endif ()
 if (RAZ_USE_NETWORKING AND NOT RAZ_USE_EMSCRIPTEN)
     file(GLOB RAZ_NETWORK_TEST_FILES "${PROJECT_SOURCE_DIR}/src/RaZ/Network/*.cpp")
     list(APPEND RAZ_TEST_FILES ${RAZ_NETWORK_TEST_FILES})
+else ()
+    list(REMOVE_ITEM RAZ_TEST_FILES "${PROJECT_SOURCE_DIR}/src/RaZ/Script/LuaNetwork.cpp")
 endif ()
 
 #####################
