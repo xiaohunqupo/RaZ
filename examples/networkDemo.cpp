@@ -7,11 +7,7 @@ int main() {
     Raz::Logger::setLoggingLevel(Raz::LoggingLevel::ALL);
 
     Raz::TcpServer server;
-    // The server runs synchronously; starting it in a separate thread to avoid blocking the main one
-    std::thread([&server] () {
-      Raz::Threading::setCurrentThreadName("Server thread");
-      server.start(1234);
-    }).detach();
+    server.start(1234);
 
     Raz::TcpClient client("localhost", 1234);
 

@@ -26,7 +26,7 @@ TEST_CASE("TcpClient connection", "[network]") {
 
   CHECK_THROWS(client.connect("localhost", 1234)); // No server to connect to
 
-  std::thread serverThread([&server] () { server.start(1234); });
+  server.start(1234);
 
   CHECK_NOTHROW(client.connect("localhost", 1234));
   CHECK(client.isConnected());
@@ -35,12 +35,11 @@ TEST_CASE("TcpClient connection", "[network]") {
   CHECK_FALSE(client.isConnected());
 
   CHECK_NOTHROW(server.stop());
-  CHECK_NOTHROW(serverThread.join());
 }
 
 TEST_CASE("TcpClient send and receive", "[network]") {
   Raz::TcpServer server;
-  std::thread serverThread([&server] () { server.start(1234); });
+  server.start(1234);
 
   Raz::TcpClient client("localhost", 1234);
   REQUIRE(client.isConnected());
@@ -55,12 +54,11 @@ TEST_CASE("TcpClient send and receive", "[network]") {
 
   client.disconnect();
   server.stop();
-  serverThread.join();
 }
 
 TEST_CASE("TcpClient receive at least", "[network]") {
   Raz::TcpServer server;
-  std::thread serverThread([&server] () { server.start(1234); });
+  server.start(1234);
 
   Raz::TcpClient client("localhost", 1234);
   REQUIRE(client.isConnected());
@@ -74,12 +72,11 @@ TEST_CASE("TcpClient receive at least", "[network]") {
 
   client.disconnect();
   server.stop();
-  serverThread.join();
 }
 
 TEST_CASE("TcpClient receive exactly", "[network]") {
   Raz::TcpServer server;
-  std::thread serverThread([&server] () { server.start(1234); });
+  server.start(1234);
 
   Raz::TcpClient client("localhost", 1234);
   REQUIRE(client.isConnected());
@@ -90,12 +87,11 @@ TEST_CASE("TcpClient receive exactly", "[network]") {
 
   client.disconnect();
   server.stop();
-  serverThread.join();
 }
 
 TEST_CASE("TcpClient receive until delimiter", "[network]") {
   Raz::TcpServer server;
-  std::thread serverThread([&server] () { server.start(1234); });
+  server.start(1234);
 
   Raz::TcpClient client("localhost", 1234);
   REQUIRE(client.isConnected());
@@ -106,5 +102,4 @@ TEST_CASE("TcpClient receive until delimiter", "[network]") {
 
   client.disconnect();
   server.stop();
-  serverThread.join();
 }

@@ -1,5 +1,6 @@
 #include "RaZ/Network/TcpServer.hpp"
 #include "RaZ/Utils/Logger.hpp"
+#include "RaZ/Utils/Threading.hpp"
 
 #include "asio/ip/tcp.hpp"
 #include "asio/write.hpp"
@@ -56,6 +57,7 @@ struct TcpServer::Impl {
 
   asio::io_context context;
   asio::ip::tcp::acceptor acceptor;
+  std::thread contextThread;
 };
 
 TcpServer::TcpServer() : m_impl{ std::make_unique<Impl>() } {}
@@ -63,16 +65,24 @@ TcpServer::TcpServer() : m_impl{ std::make_unique<Impl>() } {}
 void TcpServer::start(unsigned short port) {
   Logger::debug("[TcpServer] Starting on port {}...", port);
 
+  stop();
   setup(port);
   accept();
 
-  m_impl->context.run();
+  m_impl->contextThread = std::thread([this] () {
+    Threading::setCurrentThreadName("TCP server");
+    m_impl->context.run();
+  });
 }
 
 void TcpServer::stop() {
   Logger::debug("[TcpServer] Stopping...");
+
   m_impl->acceptor.close();
   m_impl->context.stop();
+  if (m_impl->contextThread.joinable())
+    m_impl->contextThread.join();
+
   Logger::debug("[TcpServer] Stopped");
 }
 

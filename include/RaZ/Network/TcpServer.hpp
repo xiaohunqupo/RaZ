@@ -14,7 +14,6 @@ public:
   TcpServer(TcpServer&&) noexcept = default;
 
   /// Starts the server and listens for connections.
-  /// \note This operation is blocking; call the function from another thread if needed.
   /// \param port Port to listen for connections on.
   void start(unsigned short port);
   /// Stops the server.
