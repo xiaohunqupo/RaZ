@@ -1,7 +1,10 @@
 #include "RaZ/Network/UdpServer.hpp"
 #include "RaZ/Utils/Logger.hpp"
+#include "RaZ/Utils/Threading.hpp"
 
 #include "asio/ip/udp.hpp"
+
+#include <thread>
 
 namespace Raz {
 
@@ -10,6 +13,7 @@ struct UdpServer::Impl {
 
   asio::io_context context;
   asio::ip::udp::socket socket;
+  std::thread contextThread;
   asio::ip::udp::endpoint senderEndpoint;
   std::array<char, 1024> data {};
 };
@@ -19,17 +23,25 @@ UdpServer::UdpServer() : m_impl{ std::make_unique<Impl>() } {}
 void UdpServer::start(unsigned short port) {
   Logger::debug("[UdpServer] Starting on port {}...", port);
 
+  stop();
   setup(port);
   receive();
 
-  m_impl->context.run();
+  m_impl->contextThread = std::thread([this] () {
+    Threading::setCurrentThreadName("UDP server");
+    m_impl->context.run();
+  });
 }
 
 void UdpServer::stop() {
   Logger::debug("[UdpServer] Stopping...");
+
   // shutdown() shouldn't be called on UDP sockets
   m_impl->socket.close();
   m_impl->context.stop();
+  if (m_impl->contextThread.joinable())
+    m_impl->contextThread.join();
+
   Logger::debug("[UdpServer] Stopped");
 }
 

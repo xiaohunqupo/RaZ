@@ -18,7 +18,7 @@ TEST_CASE("UdpClient basic", "[network]") {
 
 TEST_CASE("UdpClient send", "[network]") {
   Raz::UdpServer server;
-  std::thread serverThread([&server] () { server.start(1234); });
+  server.start(1234);
 
   Raz::UdpClient client;
   REQUIRE_NOTHROW(client.setDestination("localhost", 1234));
@@ -32,7 +32,5 @@ TEST_CASE("UdpClient send", "[network]") {
   CHECK(client.receive() == "other test");
 
   client.close();
-
   server.stop();
-  serverThread.join();
 }
