@@ -28,3 +28,25 @@ TEST_CASE("LuaNetwork TcpServer", "[script][lua][network]") {
     tcpServer:stop()
   )"));
 }
+
+TEST_CASE("LuaNetwork UdpClient", "[script][lua][network]") {
+  CHECK(TestUtils::executeLuaScript(R"(
+    local udpClient = UdpClient.new()
+    udpClient       = UdpClient.new("localhost", 1234)
+
+    udpClient:setDestination("localhost", 1234)
+    udpClient:send("data")
+    udpClient:recoverAvailableByteCount()
+    --udpClient:receive() -- Can't receive data without an active connection
+    udpClient:close()
+  )"));
+}
+
+TEST_CASE("LuaNetwork UdpServer", "[script][lua][network]") {
+  CHECK(TestUtils::executeLuaScript(R"(
+    local udpServer = UdpServer.new()
+
+    udpServer:start(1234)
+    udpServer:stop()
+  )"));
+}

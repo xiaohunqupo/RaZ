@@ -43,7 +43,8 @@ void LuaWrapper::registerNetworkTypes() {
 
   {
     sol::usertype<UdpClient> udpClient = state.new_usertype<UdpClient>("UdpClient",
-                                                                       sol::constructors<UdpClient()>());
+                                                                       sol::constructors<UdpClient(),
+                                                                                         UdpClient(const std::string&, unsigned short)>());
     udpClient["setDestination"]            = &UdpClient::setDestination;
     udpClient["send"]                      = &UdpClient::send;
     udpClient["recoverAvailableByteCount"] = &UdpClient::recoverAvailableByteCount;
